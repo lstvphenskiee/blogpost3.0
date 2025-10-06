@@ -18,7 +18,7 @@ $(() => {
                     console.log("response");
                     $commentsContainer.html(response);
                     $commentSection.removeClass('d-none');
-                    $button.text('Hide Comments');
+                    $button.text('Hide Comment');
                 },
                 error: function (xhr) {
                     $commentsContainer.html(`<p class="text-danger">Error loading comments: ${xhr.status}</p>`);
@@ -27,11 +27,11 @@ $(() => {
             });
         } else {
             $commentSection.addClass('d-none');
-            $button.text('View Comments');
+            $button.text('View Comment');
         }
     });
 
-    // Submit comment form
+    // COMMENT FORM
     $(document).on('submit', '.commentForm', function (e) {
         e.preventDefault();
 
@@ -59,9 +59,42 @@ $(() => {
                 alert('Error adding comment: ' + xhr.status);
             },
             complete: function () {
-                // Re-enable button and restore text
                 $submitBtn.prop('disabled', false).text('Comment');
             }
         });
     });
+
+    // REPLIES
+    $(document).on('click', '.replyToggle', function (e) {
+        e.preventDefault();
+        const $form = $(this).siblings('.replyForm');
+        $form.toggleClass('d-none');
+    });
+
+    $(document).on('submit', '.replyForm', function (e) {
+        e.preventDefault();
+
+        const $form = $(this);
+        const postId = $form.data('post-id');
+        const parentId = $form.data('parent-id');
+        const $commentsContainer = $form.closest('.commentsContainer');
+        const formData = $form.serialize() + `&parent_id=${parentId}`;
+
+        $.ajax({
+            url: `/posts/${postId}/comment`,
+            type: 'POST',
+            data: formData,
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function (response) {
+                $commentsContainer.html(response);
+            },
+            error: function (xhr) {
+                console.error(xhr.responseText);
+                alert('Error submitting reply.');
+            }
+        });
+    });
+
 });

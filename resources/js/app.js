@@ -3,6 +3,7 @@ import 'bootstrap';
 import './loginRegister';
 import './modal';
 import './comment';
+import './post';
 
 
 

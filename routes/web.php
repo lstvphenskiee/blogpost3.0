@@ -20,7 +20,7 @@ Route::middleware([AuthOr404::class, PreventBack::class])
     ->controller(PostController::class)->group(function () {
         Route::get('/dashboard', 'index')->name('blog.index');
         Route::get('/create-post', 'create')->name('blog.create');
-        Route::post('/posts/{post}/comment', 'addComment')->name('blog.comment');
         Route::get('/posts/{post}/comments', 'fetchComments')->name('blog.fetchComments');
+        Route::post('/posts/{post}/comment', 'addComment')->name('blog.comment');
         Route::post('/posts', 'store')->name('blog.store');
     });

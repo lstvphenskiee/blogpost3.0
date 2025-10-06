@@ -9,7 +9,14 @@ use App\Models\Comment;
 class PostController extends Controller
 {
     public function index() {
-        $posts = Post::with( ['user', 'comments.user'])->latest()->get();
+        $posts = Post::with([
+            'user',
+            'comments' => function ($query) {
+                $query->whereNull('parent_id')
+                    ->with(['user', 'replies.user', 'replies.replies.user'])
+                    ->latest();
+            }
+        ])->latest()->get();
         return view('blog.index', ['posts' => $posts]);
     }
 
@@ -17,36 +24,63 @@ class PostController extends Controller
         return view('blog.modal-post');
     }
 
-    public function store(Request $req) {
-        $validated = $req->validate([
-            'content' => 'required|string'
-        ]);
+    // public function store(Request $req) {
+    //     $validated = $req->validate([
+    //         'content' => 'required|string'
+    //     ]);
         
+    //     $post = $req->user()->posts()->create($validated);
+
+    //     $post->load('user', 'comments.user');
+
+    //     return redirect()->route('components.post', ['post' => $post]);
+    // }
+
+    public function store(Request $req)
+    {
+        $validated = $req->validate([
+            'content' => 'required|string',
+        ]);
+
         $post = $req->user()->posts()->create($validated);
 
-        return redirect()->route('blog.index', $post);
+        // load relationships for display
+        $post->load('user', 'comments.user');
+
+        // Return only a small partial for the new post
+        return view('components.post', ['post' => $post]);
     }
 
     public function addComment(Request $req, Post $post) {
         $validated = $req->validate([
-            'content' => 'required|string'
+            'content' => 'required|string',
+            'parent_id' => 'nullable|exists:comments,id',
+
         ]);
 
         $comment = $post->comments()->create([
             'content' => $validated['content'],
             'user_id' => auth()->id(),
+            'parent_id' =>$validated['parent_id'] ?? null,
         ]);
 
-        $comments = $post->comments()->with('user')->latest()->get();
+        $comments = $post->comments()
+            ->with(['user', 'replies.user', 'replies.replies.user'])
+            ->whereNull('parent_id')
+            ->latest()
+            ->get();
 
         return view('components.comment', ['comments' => $comments]);
-
-        
     }
 
     public function fetchComments(Post $post) {
-        $comments = $post->comments()->with('user')->latest()->get();
-        return view('components.comment', compact('comments'));
+        $comments = $post->comments()
+        ->with(['user', 'replies.user', 'replies.replies.user'])
+        ->whereNull('parent_id')
+        ->latest()
+        ->get();
+
+        return view('components.comment', ['comments' => $comments]);
     }
 
 }
