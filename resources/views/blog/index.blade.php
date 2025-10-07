@@ -5,4 +5,5 @@
             @include('components.post', ['post' => $post])
         @endforeach
     </div>
+    @include('components.edit-post')
 </x-dashboard>

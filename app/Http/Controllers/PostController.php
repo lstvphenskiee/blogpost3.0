@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Post;
 use App\Models\Comment;
+use App\Models\User;
 
 class PostController extends Controller
 {
@@ -24,31 +25,43 @@ class PostController extends Controller
         return view('blog.modal-post');
     }
 
-    // public function store(Request $req) {
-    //     $validated = $req->validate([
-    //         'content' => 'required|string'
-    //     ]);
-        
-    //     $post = $req->user()->posts()->create($validated);
-
-    //     $post->load('user', 'comments.user');
-
-    //     return redirect()->route('components.post', ['post' => $post]);
-    // }
-
-    public function store(Request $req)
-    {
+    public function store(Request $req) {
         $validated = $req->validate([
             'content' => 'required|string',
         ]);
 
         $post = $req->user()->posts()->create($validated);
 
-        // load relationships for display
         $post->load('user', 'comments.user');
 
-        // Return only a small partial for the new post
         return view('components.post', ['post' => $post]);
+    }
+
+    public function update(Request $request, Post $post) {
+        $validated = $request->validate([
+            'content' => 'required|string',
+        ]);
+
+        // Check ownership
+        if ($post->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $post->update($validated);
+
+        $post->load('user', 'comments.user');
+
+        return view('components.post', ['post' => $post]);
+    }
+
+    public function destroy(Post $post) {
+        if ($post->user_id !== auth()->id()) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $post->delete();
+
+        return response()->json(['success' => true]);
     }
 
     public function addComment(Request $req, Post $post) {

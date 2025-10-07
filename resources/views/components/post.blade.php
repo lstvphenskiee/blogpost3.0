@@ -1,10 +1,32 @@
-<div class="card mb-3">
+<div class="card mb-3" data-post-id="{{ $post->id }}">
     <div class="card-body">
-        <h4>{{ $post->user->name }}</h4>
-        <small class="text-muted">
-            {{ $post->created_at->format('F j, Y \\a\\t h:i A') }}
-        </small>
-        <p class="card-text">{{ Str::limit($post->content, 150) }}</p>
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <h4 class="mb-0">{{ $post->user->name }}</h4>
+                <small class="text-muted">
+                    {{ $post->created_at->format('F j, Y \\a\\t h:i A') }}
+                </small>
+            </div>
+
+            @if(Auth::id() === $post->user_id)
+                <div class="d-flex gap-1">
+                    <button class="btn btn-sm btn-outline-secondary editPostBtn"
+                        data-bs-toggle="modal"
+                        data-bs-target="#editPostModal"
+                        data-post-id="{{ $post->id }}"
+                        data-content="{{ $post->content }}">
+                        Edit
+                    </button>
+
+                    <button class="btn btn-sm btn-outline-danger deletePostBtn"
+                        data-post-id="{{ $post->id }}">
+                        Delete
+                    </button>
+                </div>
+            @endif
+        </div>
+
+        <p class="card-text mt-3">{{ Str::limit($post->content, 150) }}</p>
 
         <x-button variant="none" class="toggleComments" data-post-id="{{ $post->id }}">
             View Comment

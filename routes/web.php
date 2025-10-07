@@ -23,4 +23,6 @@ Route::middleware([AuthOr404::class, PreventBack::class])
         Route::get('/posts/{post}/comments', 'fetchComments')->name('blog.fetchComments');
         Route::post('/posts/{post}/comment', 'addComment')->name('blog.comment');
         Route::post('/posts', 'store')->name('blog.store');
+        Route::put('/posts/{post}', 'update')->name('blog.update');
+        Route::delete('/posts/{post}', 'destroy')->name('blog.destroy');
     });
