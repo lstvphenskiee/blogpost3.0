@@ -18,9 +18,14 @@
                         <x-button type="submit" variant="primary" class="w-100">Login</x-button>
                     </div>
                 </x-form>
-                {{-- <a href="{{ route('register-module')}}">Rgister</a> --}}
                 <button id="show-register" class="bt btn-dark cursor-pointer">Register</button>
             </div>
         </div>
     </div>
+    <script>
+        window.loginError = @json(session('error'));
+        window.registerSuccess = @json(session('success'));
+    </script>
+
+
 </x-loginRegister>

@@ -5,8 +5,6 @@ import './modal';
 import './comment';
 import './post';
 
-
-
 // import $ from 'jquery';
 // window.$ = $;
 // window.jQuery = $;

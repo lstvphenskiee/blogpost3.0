@@ -9,21 +9,26 @@
             </div>
 
             @if(Auth::id() === $post->user_id)
-                <div class="d-flex gap-1">
-                    <button class="btn btn-sm btn-outline-secondary editPostBtn"
+                <div class="d-flex justify-content-end align-items-center gap-2">
+                    <button 
+                        type="button" 
+                        class="btn btn-sm btn-outline-secondary editPostBtn"
                         data-bs-toggle="modal"
                         data-bs-target="#editPostModal"
                         data-post-id="{{ $post->id }}"
                         data-content="{{ $post->content }}">
-                        Edit
+                        <i class="bx bx-edit"></i> Edit
                     </button>
 
-                    <button class="btn btn-sm btn-outline-danger deletePostBtn"
+                    <button 
+                        type="button" 
+                        class="btn btn-sm btn-outline-danger deletePostBtn"
                         data-post-id="{{ $post->id }}">
-                        Delete
+                        <i class="bx bx-trash"></i> Delete
                     </button>
                 </div>
             @endif
+
         </div>
 
         <p class="card-text mt-3">{{ Str::limit($post->content, 150) }}</p>

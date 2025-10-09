@@ -29,10 +29,7 @@ class AuthController extends Controller
 
     public function registerForm() {
         
-        return view('auth.register',[
-            'id' => request()->get('id'),
-            'title' => request()->get('title')
-        ]);
+        return view('auth.register');
     }
 
     public function register(Request $req) {
@@ -47,9 +44,6 @@ class AuthController extends Controller
             'email' => $user_data['email'],
             'password' => $user_data['password'],
         ]);
-
-        // dd($user);
-        // Auth::login($user);
 
         return redirect()->route('login-module')
         ->with('success', 'Register succes pls login to continue using your registered account');

@@ -1,5 +1,6 @@
 import $ from 'jquery';
 import * as bootstrap from 'bootstrap';
+import Swal from 'sweetalert2';
 
 $(() => {
     // CREATING POST
@@ -100,31 +101,60 @@ $(() => {
 
     // DELETE SECTION
     $(document).on('click', '.deletePostBtn', function (e) {
-        e.preventDefault();
+    e.preventDefault();
 
-        const postId = $(this).data('post-id');
-        const confirmed = confirm('Are you sure you want to delete this post?');
+    const postId = $(this).data('post-id');
 
-        if (!confirmed) return;
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "This post will be permanently deleted.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: `/posts/${postId}`,
+                type: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function (response) {
+                    if (response.success) {
+                        // Fade out post card
+                        $(`.card[data-post-id="${postId}"]`).fadeOut(300, function () {
+                            $(this).remove();
+                        });
 
-        $.ajax({
-            url: `/posts/${postId}`,
-            type: 'DELETE',
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            },
-            success: function (response) {
-                if (response.success) {
-                    $(`.card[data-post-id="${postId}"]`).fadeOut(300, function () {
-                        $(this).remove();
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Deleted!',
+                            text: 'Your post has been deleted.',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: response.message || 'Failed to delete post.'
+                        });
+                    }
+                },
+                error: function (xhr) {
+                    console.error('Error deleting post:', xhr.responseText);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Something went wrong. Please try again.'
                     });
                 }
-            },
-            error: function (xhr) {
-                console.error('Error deleting post:', xhr.responseText);
-                alert('Error deleting post. Please try again.');
-            }
-        });
-
+            });
+        }
     });
+});
+
 });

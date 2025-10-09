@@ -1,4 +1,5 @@
 import $ from 'jquery';
+import Swal from 'sweetalert2';
 
 $(() => {
 
@@ -35,5 +36,29 @@ $(() => {
             }
         });
     });
+
+});
+
+$(() => {
+    if (window.loginError) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Login Failed',
+            text: window.loginError,
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'Try Again'
+        });
+    }
+
+    // Register success alert
+    if (window.registerSuccess) {
+        Swal.fire({
+            icon: 'success',
+            title: 'Registration Complete!',
+            text: window.registerSuccess,
+            confirmButtonColor: '#3085d6',
+            confirmButtonText: 'Login Now'
+        });
+    }
 
 });

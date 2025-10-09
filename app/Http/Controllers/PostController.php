@@ -17,7 +17,9 @@ class PostController extends Controller
                     ->with(['user', 'replies.user', 'replies.replies.user'])
                     ->latest();
             }
-        ])->latest()->get();
+        ])
+        ->latest()
+        ->get();
         return view('blog.index', ['posts' => $posts]);
     }
 

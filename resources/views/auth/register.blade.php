@@ -12,15 +12,17 @@
                 <x-form action="{{ route('register-form') }}">
                     <div class="container">
                         <x-input name="name" type="text" label="Name" placeholder="Enter Name" class="form-floating mb-3"/>
+
                         <x-input name="email" type="email" label="Email" placeholder="Enter email" class="form-floating mb-3"/>
+
                         <x-input name="password" type="password" label="Password" placeholder="Enter password"/>
-                        <x-input name="password_confirmation" type="password" label="password_confirmation" placeholder="Confirm password"/>
+
+                        <x-input name="password_confirmation" type="password" label="Confirm Password" placeholder="Confirm password"/>
                     </div>
                     <div class="d-grid gap-2">
                         <x-button type="submit" variant="primary" class="w-100">Register</x-button>
                     </div>
                 </x-form>
-                {{-- <a href="{{ route('login-module')}}">Login</a> --}}
                 <button id="show-login" class="bt btn-dark">Login</button>
             </div>
         </div>
