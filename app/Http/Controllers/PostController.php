@@ -6,20 +6,21 @@ use Illuminate\Http\Request;
 use App\Models\Post;
 use App\Models\Comment;
 use App\Models\User;
+use App\Interfaces\PostRepositoryInterface;
+use App\Http\Requests\PostRequest;
+use App\Http\Requests\CommentRequest;
 
 class PostController extends Controller
 {
+    private $post;
+
+    public function __construct(PostRepositoryInterface $postRepo) {
+        $this->post = $postRepo;
+    }
+
     public function index() {
-        $posts = Post::with([
-            'user',
-            'comments' => function ($query) {
-                $query->whereNull('parent_id')
-                    ->with(['user', 'replies.user', 'replies.replies.user'])
-                    ->latest();
-            }
-        ])
-        ->latest()
-        ->get();
+        $posts = $this->post->getPost();
+
         return view('blog.index', ['posts' => $posts]);
     }
 
@@ -27,80 +28,57 @@ class PostController extends Controller
         return view('blog.modal-post');
     }
 
-    public function store(Request $req) {
-        $validated = $req->validate([
-            'content' => 'required|string',
-        ]);
+    public function store(PostRequest $req) {;
+        $data = $req->validated();
 
-        $post = $req->user()->posts()->create($validated);
+        $post = $this->post->createPost($req->user(), $data);
 
         $post->load('user', 'comments.user');
 
         return view('components.post', ['post' => $post]);
     }
 
-    public function update(Request $request, Post $post) {
-        $validated = $request->validate([
-            'content' => 'required|string',
-        ]);
+    public function update(PostRequest $req, Post $post) {
+        // $validated = $request->validate([
+        //     'content' => 'required|string',
+        // ]);
+
+        $data = $req->validated();
 
         // Check ownership
         if ($post->user_id !== auth()->id()) {
             abort(403, 'Unauthorized action.');
         }
 
-        $post->update($validated);
+        // $post->update($validated);
+        $updatePost = $this->post->updatePost($post, $data);
 
-        $post->load('user', 'comments.user');
+        // $post->load('user', 'comments.user');
 
         return view('components.post', ['post' => $post]);
     }
 
     public function destroy(Post $post) {
-        try {
-             if ($post->user_id !== auth()->id()) {
+        if ($post->user_id !== auth()->id()) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
-        $post->delete();
+        $this->post->deletePost($post);
 
         return response()->json(['success' => true]);
-        }
-        catch(\Exception $e) {
-            \Log::error($e);
-            return response()->json(['message' => $e->getMessage()], 500);
-        } 
        
     }
 
-    public function addComment(Request $req, Post $post) {
-        $validated = $req->validate([
-            'content' => 'required|string',
-            'parent_id' => 'nullable|exists:comments,id',
+    public function addComment(CommentRequest $req, Post $post) {
+        $validated = $req->validated();
 
-        ]);
-
-        $comment = $post->comments()->create([
-            'content' => $validated['content'],
-            'user_id' => auth()->id(),
-            'parent_id' =>$validated['parent_id'] ?? null,
-        ]);
-
-        $comments = $post->comments()
-            ->with(['user', 'replies.user', 'replies.replies.user'])
-            ->whereNull('parent_id')
-            ->latest()
-            ->get();
+        $comments = $this->post->addComment($post, $validated);
 
         return view('components.comment', ['comments' => $comments]);
     }
 
     public function fetchComments(Post $post) {
-        $comments = $post->comments()
-        ->with(['user', 'replies.user', 'replies.replies.user'])
-        ->whereNull('parent_id')
-        ->latest()
-        ->get();
+        $comments = $this->post->fetchComments($post);
 
         return view('components.comment', ['comments' => $comments]);
     }
