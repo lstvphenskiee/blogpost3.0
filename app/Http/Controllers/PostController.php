@@ -57,13 +57,20 @@ class PostController extends Controller
     }
 
     public function destroy(Post $post) {
-        if ($post->user_id !== auth()->id()) {
+        try {
+             if ($post->user_id !== auth()->id()) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
         $post->delete();
 
         return response()->json(['success' => true]);
+        }
+        catch(\Exception $e) {
+            \Log::error($e);
+            return response()->json(['message' => $e->getMessage()], 500);
+        } 
+       
     }
 
     public function addComment(Request $req, Post $post) {

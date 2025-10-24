@@ -14,7 +14,7 @@ $(() => {
 
         $submitBtn.prop('disabled', true).text('Posting...');
 
-        $.ajax({
+        $.ajax({ 
             url: url,
             type: 'POST',
             data: data,

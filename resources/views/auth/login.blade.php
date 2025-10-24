@@ -2,12 +2,12 @@
     <div class="container d-flex justify-content-center align-items-center">
         <div class="row w-100" style="max-width: 900px; min-height: 65vh;" id="login-module"> 
             <!-- Image Column -->
-            <div class="col-md-6 d-none d-md-flex justify-content-center align-items-center bg-light">
-                <img src="{{ Vite::asset('resources/img/login.jpg') }}" class="img-fluid" alt="Login Image">
+            <div class="col-md-6 d-none d-md-flex rounded-start justify-content-center align-items-center bg-light">
+                <img src="{{ asset('img/login.jpg') }}" class="img-fluid" alt="Login Image">
             </div>
 
             <!-- Form Column -->
-            <div class="col-md-6 bg-white p-4 shadow rounded form-floating mb-3">
+            <div class="col-md-6 bg-white  shadow rounded-end form-floating">
                 <h3 class="mb-4 text-center">Login</h3>
                 <x-form action="{{ route('login-form') }}">
                     <div class="container">
