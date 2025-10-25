@@ -6,23 +6,29 @@ use Illuminate\Http\Request;
 use App\Models\Post;
 use App\Models\Comment;
 use App\Models\User;
+use App\Interfaces\CommentRepositoryInterface;
+use App\http\Requests\CommentRequest;
 
 class CommentController extends Controller
 {
-    public function update(Request $request, Comment $comment) {
+    private $comment;
+
+    public function __construct(CommentRepositoryInterface $commentRepo) {
+        return $this->comment = $commentRepo;
+    }
+
+    public function update(CommentRequest $request, Comment $comment) {
         if ($comment->user_id !== auth()->id()) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
-        $validated = $request->validate([
-            'content' => 'required|string|max:1000',
-        ]);
+        $data = $request->validated();
 
-        $comment->update($validated);
+        $updated = $this->comment->updateComment($comment, $data);
 
         return response()->json([
             'success' => true,
-            'content' => $comment->content,
+            'content' => $updated->content,
         ]);
     }
 
@@ -32,14 +38,14 @@ class CommentController extends Controller
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
-        $post = $comment->post;
+        $post = $comment->id;
 
-        $comment->delete();
+        $comment = $this->comment->deleteComment($comment);
 
         return response()->json([
             'success' => true,
             'message' => 'Comment deleted successfully.',
-            'comment_id' => $comment->id,
+            'comment_id' => $post,
         ]);
     }
 }
