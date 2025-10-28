@@ -4,83 +4,83 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Post;
-use App\Models\Comment;
-use App\Models\User;
-use App\Interfaces\PostRepositoryInterface;
 use App\Http\Requests\PostRequest;
 use App\Http\Requests\CommentRequest;
+use App\Services\PostService;
+use App\Http\Resources\PostResource;
 
 class PostController extends Controller
 {
-    private $post;
+    private $postService;
 
-    public function __construct(PostRepositoryInterface $postRepo) {
-        $this->post = $postRepo;
+    public function __construct(PostService $postService)
+    {
+        $this->postService = $postService;
     }
 
-    public function index() {
-        $posts = $this->post->getPost();
+    public function index()
+    {
+        $posts = $this->postService->getAllPosts();
 
-        return view('blog.index', ['posts' => $posts]);
+        //wrap each post
+        $postResources = PostResource::collection($posts);
+
+        return view('blog.index', ['posts' => $postResources]);
     }
 
-    public function create() {
+    public function create()
+    {
         return view('blog.modal-post');
     }
 
-    public function store(PostRequest $req) {;
+    public function store(PostRequest $req)
+    {
         $data = $req->validated();
 
-        $post = $this->post->createPost($req->user(), $data);
-
+        $post = $this->postService->createPost($req->user(), $data);
         $post->load('user', 'comments.user');
 
-        return view('components.post', ['post' => $post]);
+        // Wrap post with resource
+        $postResource = new PostResource($post);
+
+        return view('components.post', ['post' => $postResource]);
     }
 
-    public function update(PostRequest $req, Post $post) {
-        // $validated = $request->validate([
-        //     'content' => 'required|string',
-        // ]);
-
+    public function update(PostRequest $req, Post $post)
+    {
         $data = $req->validated();
 
-        // Check ownership
         if ($post->user_id !== auth()->id()) {
             abort(403, 'Unauthorized action.');
         }
 
-        // $post->update($validated);
-        $updatePost = $this->post->updatePost($post, $data);
+        $this->postService->updatePost($post, $data);
+        $post->load('user', 'comments.user');
 
-        // $post->load('user', 'comments.user');
-
-        return view('components.post', ['post' => $post]);
+        return view('components.post', ['post' => new PostResource($post)]);
     }
 
-    public function destroy(Post $post) {
+    public function destroy(Post $post)
+    {
         if ($post->user_id !== auth()->id()) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
-        $this->post->deletePost($post);
-
+        $this->postService->deletePost($post);
         return response()->json(['success' => true]);
-       
     }
 
-    public function addComment(CommentRequest $req, Post $post) {
+    public function addComment(CommentRequest $req, Post $post)
+    {
         $validated = $req->validated();
-
-        $comments = $this->post->addComment($post, $validated);
-
-        return view('components.comment', ['comments' => $comments]);
-    }
-
-    public function fetchComments(Post $post) {
-        $comments = $this->post->fetchComments($post);
+        $comments = $this->postService->addComment($post, $validated);
 
         return view('components.comment', ['comments' => $comments]);
     }
 
+    public function fetchComments(Post $post)
+    {
+        $comments = $this->postService->fetchComments($post);
+        return view('components.comment', ['comments' => $comments]);
+    }
 }
